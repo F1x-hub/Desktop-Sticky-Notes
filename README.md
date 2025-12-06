@@ -106,7 +106,7 @@ MIT License - смотрите файл [LICENSE](LICENSE)
 
 ## 👨‍💻 Автор
 
-Ваше имя - [GitHub](https://github.com/yourusername)
+Fix - [GitHub](https://github.com/F1x-hub)
 
 ---
 
