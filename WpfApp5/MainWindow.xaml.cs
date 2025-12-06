@@ -92,6 +92,7 @@ namespace WpfApp5
             }
 
             var hwnd = new WindowInteropHelper(this).Handle;
+            HideFromAltTab(hwnd);
             
             uint flags = SWP_NOACTIVATE;
             int x = 0, y = 0;
@@ -235,11 +236,24 @@ namespace WpfApp5
             catch { }
         }
 
+        private void HideFromAltTab(IntPtr hwnd)
+        {
+            int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+            exStyle |= WS_EX_TOOLWINDOW;
+            SetWindowLong(hwnd, GWL_EXSTYLE, exStyle);
+        }
+
         [DllImport("user32.dll")]
         static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
         [DllImport("user32.dll")]
         static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+        [DllImport("user32.dll")]
+        static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll")]
+        static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
         [StructLayout(LayoutKind.Sequential)]
         public struct RECT
@@ -254,5 +268,7 @@ namespace WpfApp5
         const uint SWP_NOMOVE = 0x0002;
         const uint SWP_NOSIZE = 0x0001;
         const uint SWP_NOACTIVATE = 0x0010;
+        const int GWL_EXSTYLE = -20;
+        const int WS_EX_TOOLWINDOW = 0x00000080;
     }
 }
