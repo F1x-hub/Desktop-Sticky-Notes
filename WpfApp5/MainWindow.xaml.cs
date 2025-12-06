@@ -44,6 +44,7 @@ namespace WpfApp5
             };
             
             this.LocationChanged += MainWindow_LocationChanged;
+            this.SizeChanged += MainWindow_SizeChanged;
             this.Loaded += MainWindow_Loaded;
             this.Closing += MainWindow_Closing;
         }
@@ -90,42 +91,61 @@ namespace WpfApp5
                 catch { }
             }
 
-            // Send to Bottom
             var hwnd = new WindowInteropHelper(this).Handle;
             
-            // If we have an initial position (from cursor), set it here using Pixels (bypassing DPI issues)
-            // SWP_NOACTIVATE | SWP_NOZORDER (we handle Z separately or together)
-            // Actually, we want HWND_BOTTOM, so we do it all in one go or separate.
-            // Let's do one SetWindowPos for position if needed, then Z-order.
-            // Or combined.
-            
-            uint flags = SWP_NOSIZE | SWP_NOACTIVATE;
+            uint flags = SWP_NOACTIVATE;
             int x = 0, y = 0;
+            int width = 0, height = 0;
             
-            if (_initialX != -1 && _initialY != -1)
+            var savedPos = PositionManager.GetPosition(_noteFilePath);
+            
+            if (savedPos != null)
             {
+                // Restore both position and size
+                x = savedPos.X;
+                y = savedPos.Y;
+                width = (int)savedPos.Width;
+                height = (int)savedPos.Height;
+            }
+            else if (_initialX != -1 && _initialY != -1)
+            {
+                // New note with cursor position
                 x = _initialX;
                 y = _initialY;
+                flags |= SWP_NOSIZE;  // Keep default size for new notes
             }
             else
             {
-                // If no specific pos, keep current (NOMOVE)
-                flags |= SWP_NOMOVE;
+                flags |= SWP_NOMOVE | SWP_NOSIZE;
             }
-
-            SetWindowPos(hwnd, HWND_BOTTOM, x, y, 0, 0, flags);
+            
+            SetWindowPos(hwnd, HWND_BOTTOM, x, y, width, height, flags);
         }
 
         private void MainWindow_LocationChanged(object sender, EventArgs e)
         {
-            // Save position when window is moved (debounce could be added here too)
+            SavePositionAndSize();
+        }
+
+        private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (this.IsLoaded && !_isLocked)
+            {
+                SavePositionAndSize();
+            }
+        }
+
+        private void SavePositionAndSize()
+        {
             if (this.IsLoaded && !_isLocked)
             {
                 var hwnd = new WindowInteropHelper(this).Handle;
                 RECT rect;
                 if (GetWindowRect(hwnd, out rect))
                 {
-                    PositionManager.SavePosition(_noteFilePath, rect.Left, rect.Top);
+                    double width = rect.Right - rect.Left;
+                    double height = rect.Bottom - rect.Top;
+                    PositionManager.SavePosition(_noteFilePath, rect.Left, rect.Top, width, height);
                 }
             }
         }

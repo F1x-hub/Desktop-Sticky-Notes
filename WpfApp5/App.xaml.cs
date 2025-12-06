@@ -46,8 +46,17 @@ namespace WpfApp5
             {
                 foreach (var file in files)
                 {
-                    var window = new MainWindow(file);
-                    window.Show();
+                    // Only open notes with actual content
+                    try
+                    {
+                        string content = File.ReadAllText(file);
+                        if (!string.IsNullOrWhiteSpace(content))
+                        {
+                            var window = new MainWindow(file);
+                            window.Show();
+                        }
+                    }
+                    catch { /* Skip files that can't be read */ }
                 }
             }
         }

@@ -56,10 +56,16 @@ namespace WpfApp5
             return _positions.ContainsKey(key) ? _positions[key] : null;
         }
 
-        public static void SavePosition(string noteFileName, double left, double top)
+        public static void SavePosition(string noteFileName, double left, double top, double width, double height)
         {
             var key = Path.GetFileName(noteFileName);
-            _positions[key] = new WindowPosition { X = (int)left, Y = (int)top };
+            _positions[key] = new WindowPosition 
+            { 
+                X = (int)left, 
+                Y = (int)top,
+                Width = width,
+                Height = height
+            };
             SavePositions();
         }
 
@@ -78,5 +84,7 @@ namespace WpfApp5
     {
         public int X { get; set; }
         public int Y { get; set; }
+        public double Width { get; set; }
+        public double Height { get; set; }
     }
 }
